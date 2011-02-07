@@ -24,32 +24,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <assert.h>
-#include <errno.h>
+#include <stdint.h>
+#include "utils.h"
 
 #undef BIG_ENDIAN_HOST
-typedef unsigned int u32;
-
-/****************
- * Rotate a 32 bit integer by n bytes
- */
-#if defined(__GNUC__) && defined(__i386__)
-static inline u32 rol( u32 x, int n)
-{
-	__asm__("roll %%cl,%0"
-			:"=r" (x)
-			:"0" (x),"c" (n));
-	return x;
-}
-#else
-#define rol(x,n) ( ((x) << (n)) | ((x) >> (32-(n))) )
-#endif
-
 
 typedef struct {
-	u32  h0,h1,h2,h3,h4;
-	u32  nblocks;
+	uint32_t  h0,h1,h2,h3,h4;
+	uint32_t  nblocks;
 	unsigned char buf[64];
 	int  count;
 } SHA1_CONTEXT;
@@ -60,31 +42,30 @@ typedef struct {
  * handle will the destroy the returned buffer.
  * Returns: 20 bytes representing the digest.
  */
-char *Sha1String(unsigned char *inbuf, size_t inlen)
+int Sha1String(uint32_t *SHA1KEY, unsigned char *inbuf, size_t inlen)
 {
-	SHA1_CONTEXT ctx;
-	SHA1_CONTEXT *hd = &ctx;
+	SHA1_CONTEXT hd;
 
-	hd->h0 = 0x67452301;
-	hd->h1 = 0xefcdab89;
-	hd->h2 = 0x98badcfe;
-	hd->h3 = 0x10325476;
-	hd->h4 = 0xc3d2e1f0;
-	hd->nblocks = 0;
-	hd->count = 0;
-	for( ; inlen && hd->count < 64; inlen-- )
-		hd->buf[hd->count++] = *inbuf++;
+	(&hd)->h0 = 0x67452301;
+	(&hd)->h1 = 0xefcdab89;
+	(&hd)->h2 = 0x98badcfe;
+	(&hd)->h3 = 0x10325476;
+	(&hd)->h4 = 0xc3d2e1f0;
+	(&hd)->nblocks = 0;
+	(&hd)->count = 0;
+	 while(inlen--)
+		(&hd)->buf[(&hd)->count++] = *inbuf++;
 
-	u32 t, msb, lsb;
+	uint32_t t, msb, lsb;
 	unsigned char *p;
 
-	t = hd->nblocks;
+	t = (&hd)->nblocks;
 	/* multiply by 64 to make a byte count */
 	lsb = t << 6;
 	msb = t >> 26;
 	/* add the count */
 	t = lsb;
-	if( (lsb += hd->count) < t )
+	if( (lsb += (&hd)->count) < t )
 		msb++;
 	/* multiply by 8 to make a bit count */
 	t = lsb;
@@ -92,43 +73,35 @@ char *Sha1String(unsigned char *inbuf, size_t inlen)
 	msb <<= 3;
 	msb |= t >> 29;
 
-	if( hd->count < 56 ) { /* enough room */
-		hd->buf[hd->count++] = 0x80; /* pad */
-		while( hd->count < 56 )
-			hd->buf[hd->count++] = 0;  /* pad */
-	}
-	else { /* need one extra block */
-		hd->buf[hd->count++] = 0x80; /* pad character */
-		while( hd->count < 64 )
-			hd->buf[hd->count++] = 0;
-		/* sha1_write(hd, NULL, 0);  // flush */;
-		memset(hd->buf, 0, 56 ); /* fill next block with zeroes */
-	}
-	/* append the 64 bit count */
-	hd->buf[56] = msb >> 24;
-	hd->buf[57] = msb >> 16;
-	hd->buf[58] = msb >>  8;
-	hd->buf[59] = msb	   ;
-	hd->buf[60] = lsb >> 24;
-	hd->buf[61] = lsb >> 16;
-	hd->buf[62] = lsb >>  8;
-	hd->buf[63] = lsb	   ;
+	(&hd)->buf[(&hd)->count++] = 0x80; /* pad */
+	while( (&hd)->count < 56 )
+		(&hd)->buf[(&hd)->count++] = 0;  /* pad */
 
-	u32 a,b,c,d,e,tm;
-	u32 x[16];
+	/* append the 64 bit count */
+	(&hd)->buf[56] = msb >> 24;
+	(&hd)->buf[57] = msb >> 16;
+	(&hd)->buf[58] = msb >>  8;
+	(&hd)->buf[59] = msb;
+	(&hd)->buf[60] = lsb >> 24;
+	(&hd)->buf[61] = lsb >> 16;
+	(&hd)->buf[62] = lsb >>  8;
+	(&hd)->buf[63] = lsb;
+
+	uint32_t a,b,c,d,e,tm;
+	uint32_t x[16];
 
 	/* get values from the chaining vars */
-	a = hd->h0;
-	b = hd->h1;
-	c = hd->h2;
-	d = hd->h3;
-	e = hd->h4;
+	a = (&hd)->h0;
+	b = (&hd)->h1;
+	c = (&hd)->h2;
+	d = (&hd)->h3;
+	e = (&hd)->h4;
 
 #ifdef BIG_ENDIAN_HOST
-	memcpy( x, hd->buf, 64 );
+	memcpy( x, (&hd)->buf, 64 );
 #else
 	{
-		unsigned char* data = hd->buf;
+		unsigned char* data = (&hd)->buf;
 		int i;
 		unsigned char *p2;
 		for(i=0, p2=(unsigned char*)x; i < 16; i++, p2 += 4 ) {
@@ -153,13 +126,13 @@ char *Sha1String(unsigned char *inbuf, size_t inlen)
 
 #define M(i) ( tm =   x[i&0x0f] ^ x[(i-14)&0x0f] \
 		^ x[(i-8)&0x0f] ^ x[(i-3)&0x0f] \
-		, (x[i&0x0f] = rol(tm,1)) )
+		, (x[i&0x0f] = ROTATE_LEFT(tm,1)) )
 
-#define R(a,b,c,d,e,f,k,m)  do { e += rol( a, 5 )     \
+#define R(a,b,c,d,e,f,k,m)  do { e += ROTATE_LEFT( a, 5 )     \
 	+ f( b, c, d )  \
 	+ k	      \
 	+ m;	      \
-	b = rol( b, 30 );    \
+	b = ROTATE_LEFT( b, 30 );    \
 } while(0)
 R( a, b, c, d, e, F1, K1, x[ 0] );
 R( e, a, b, c, d, F1, K1, x[ 1] );
@@ -243,18 +216,18 @@ R( c, d, e, a, b, F4, K4, M(78) );
 R( b, c, d, e, a, F4, K4, M(79) );
 
 /* Update chaining vars */
-hd->h0 += a;
-hd->h1 += b;
-hd->h2 += c;
-hd->h3 += d;
-hd->h4 += e;
+(&hd)->h0 += a;
+(&hd)->h1 += b;
+(&hd)->h2 += c;
+(&hd)->h3 += d;
+(&hd)->h4 += e;
 
-p = hd->buf;
+p = (&hd)->buf;
 #ifdef BIG_ENDIAN_HOST
-#define X(a) do { *(u32*)p = hd->h##a ; p += 4; } while(0)
+#define X(a) do { *(uint32_t*)p = (&hd)->h##a ; p += 4; } while(0)
 #else /* little endian */
-#define X(a) do { *p++ = hd->h##a >> 24; *p++ = hd->h##a >> 16;	 \
-	*p++ = hd->h##a >> 8; *p++ = hd->h##a; } while(0)
+#define X(a) do { *p++ = (&hd)->h##a >> 24; *p++ = (&hd)->h##a >> 16;	 \
+	*p++ = (&hd)->h##a >> 8; *p++ = (&hd)->h##a; } while(0)
 #endif
 X(0);
 X(1);
@@ -263,11 +236,24 @@ X(3);
 X(4);
 #undef X
 
-char *out = malloc(sizeof(char)*40);
-sprintf(out,"%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x", hd->buf[0],hd->buf[1], hd->buf[2],hd->buf[3], hd->buf[4],hd->buf[5], hd->buf[6],hd->buf[7],hd->buf[8],
-						hd->buf[9],hd->buf[10], hd->buf[11],hd->buf[12], hd->buf[13],hd->buf[14], hd->buf[15],hd->buf[16],hd->buf[17],
-						hd->buf[18],hd->buf[19]);
-return out;
+if ((&hd)->buf[0] != SHA1KEY[0])
+	return false;
+return((&hd)->buf[0] == SHA1KEY[0] && (&hd)->buf[1] == SHA1KEY[1] && (&hd)->buf[2] == SHA1KEY[2] && (&hd)->buf[3] == SHA1KEY[3]
+	&& (&hd)->buf[4] == SHA1KEY[4] && (&hd)->buf[5] == SHA1KEY[5] && (&hd)->buf[6] == SHA1KEY[6] && (&hd)->buf[7] == SHA1KEY[7]
+	&& (&hd)->buf[8] == SHA1KEY[8] && (&hd)->buf[9] == SHA1KEY[9] && (&hd)->buf[10] == SHA1KEY[10] && (&hd)->buf[11] == SHA1KEY[11]
+	&& (&hd)->buf[12] == SHA1KEY[12] && (&hd)->buf[13] == SHA1KEY[13] && (&hd)->buf[14] == SHA1KEY[14] && (&hd)->buf[15] == SHA1KEY[15]
+	&& (&hd)->buf[16] == SHA1KEY[16] && (&hd)->buf[17] == SHA1KEY[17]  && (&hd)->buf[18] == SHA1KEY[18] && (&hd)->buf[19] == SHA1KEY[19]);
 }	
 
-
+void loadSha1Int(char *sha1Key,uint32_t *SHA1KEY){
+	int i;
+	char temp[11];
+	for (i=0;i<40;i+=2){
+		temp[0] = '0';
+		temp[1] = 'x';
+		temp[2]=sha1Key[i];
+		temp[3]=sha1Key[i+1];
+		temp[4]='\0';
+		SHA1KEY[i/2] = (uint32_t)strtoul(temp,0,0);
+	}
+}

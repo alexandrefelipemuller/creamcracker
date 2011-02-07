@@ -1,9 +1,9 @@
 #COMP=/opt/open64/bin/opencc -O2 
 #COMP=clang -O2 
-COMP=gcc # -O2 -Wall -Wextra -Werror -funsafe-loop-optimizations -fpredictive-commoning # -fprofile-use
+COMP=gcc -O2 -Wall -Wextra -Werror -funsafe-loop-optimizations -fpredictive-commoning # -fprofile-use
 
-MD5BIN=md5decode
-SHA1BIN=sha1decode
+MD5BIN=bin/md5decode
+SHA1BIN=bin/sha1decode
 all: $(MD5BIN) $(SHA1BIN)
 
 ./$(MD5BIN): md5decode.c md5.c
