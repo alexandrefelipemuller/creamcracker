@@ -5,33 +5,36 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-char *alpha;
-unsigned short int alphaSize;
-unsigned int current_stringSize;
-uint32_t sMd5Key[4];
+static char *alpha;
+static int alphaSize;
+static int current_stringSize;
+static uint32_t sMd5Key[4];
 
-void showResult(uint32_t *in, unsigned int current_stringSize);
 int TransformCompareMd5(uint32_t *key,uint32_t *in);
 void loadMd5(uint32_t buf[4],char *md5Key);
+static void showResult(uint32_t *in,int current_stringSize);
 
-void crack(unsigned int begin,uint32_t *in){
-	if (begin < current_stringSize)
+static void crack(int offset,uint32_t *in)
+{
+	if (offset >= current_stringSize)
 	{
-		uint32_t i,j=alphaSize-1;
-		uint32_t p = (begin << 3) & 24;
-		for(i=alphaSize;i--;)
-		{
-			in[begin >> 2] &= (uint32_t) ~ (0xFF <<  p); //Clear position of the new letter
-			in[begin >> 2] += (uint32_t) alpha[j-i] << p; // Put the new letter on string
-			crack(begin+1,in);
-		}
+		if (TransformCompareMd5(sMd5Key, in))
+			showResult(in, current_stringSize);
 	}
 	else
-		if (TransformCompareMd5(sMd5Key, in))
-		       showResult(in, current_stringSize);
+	{
+		uint32_t j=alphaSize,i=j--;
+		const uint32_t p = (offset << 3) & 24;
+		for(;i--;)
+		{
+			in[offset >> 2] &= (uint32_t) ~ (0xFF <<  p); //Clear position of the new letter
+			in[offset >> 2] += (uint32_t) alpha[j-i] << p; // Put the new letter on string
+			crack(offset+1,in);
+		}
+	}
 }
 
-void showResult(uint32_t *in,unsigned int current_stringSize){
+static void showResult(uint32_t *in,int current_stringSize){
 	int i;
 	char *keyFound=malloc(sizeof(char)*30);
 	for (i = 0; i < 30; i++)
@@ -42,12 +45,12 @@ void showResult(uint32_t *in,unsigned int current_stringSize){
 }
 
 struct thread_data{
-        unsigned int tam;
+        int tam;
 	char initChar;
 };
-struct thread_data *thread_data_array;
+static struct thread_data *thread_data_array;
 
-void callCrack_thread(void *threadarg){
+static void callCrack_thread(void *threadarg){
 	struct thread_data *my_data;
         my_data = (struct thread_data *) threadarg;
 	uint32_t in[16];
@@ -59,8 +62,8 @@ void callCrack_thread(void *threadarg){
 }
 
 
-void callCrack_size(int size){
-        unsigned int j;
+static void callCrack_size(int size){
+        int j;
 	pthread_t request[alphaSize];
         for (j=0; j < alphaSize; j++)
         {
@@ -80,9 +83,9 @@ int main (int argc, char *argv[]){
 		exit(1);
 	}
 	char md5Key[33];
-	unsigned char alphaType = (unsigned char)*argv[1];
-	unsigned int minS = (unsigned int)atoi(argv[2]);
-	unsigned int maxS = (unsigned int)atoi(argv[3]);
+	char alphaType = (char)*argv[1];
+	const int minS = (int)atoi(argv[2]);
+	const int maxS = (int)atoi(argv[3]);
 	switch (alphaType)
 	{
 		case 'c':
@@ -117,13 +120,13 @@ int main (int argc, char *argv[]){
                 printf ("%s [caAdx] min max md5(32 chars 0-9A-F)\n", argv[0]);
                 exit(1);
         }
-        unsigned int i;
+        int i;
         for (i=0; i < 33; i++)
         	md5Key[i] = (char)tolower(argv[4][i]); //better than strcpy(md5Key, argv[4]);
 
 	printf("hash %s to be cracked\n",md5Key);
 	loadMd5(sMd5Key,md5Key);
-	alphaSize=(unsigned short int)strlen(alpha);
+	alphaSize=(int)strlen(alpha);
 	thread_data_array=malloc(sizeof(struct thread_data)*alphaSize);
 
 	for (i=minS;i <= maxS;i++){
