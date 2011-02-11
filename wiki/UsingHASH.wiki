@@ -1,4 +1,4 @@
-#summary One-sentence summary of this page.
+#summary How systems admins could use HASH to store passwords
 
 = A little bit about security =
 
