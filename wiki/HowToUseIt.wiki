@@ -2,11 +2,11 @@
 
 = How to use =
 To execute, use the syntax:
-bin/md5decode '['caAdx']' X Y HASH
+bin/md5decode `[`caAdx`]` X Y HASH
 
 where:
 
- * '['caAdx']' is the dictionary
+ * `[`caAdx`]` is the dictionary
    * c is only 15 commons chars
    * a is lowercase letters
    * A all letters
