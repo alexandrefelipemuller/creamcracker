@@ -2,7 +2,7 @@
 
 = How to use =
 To execute, use the syntax:
-bin/md5decode ''caAdx'' X Y HASH
+bin/md5decode '['caAdx']' X Y HASH
 
 where:
 
