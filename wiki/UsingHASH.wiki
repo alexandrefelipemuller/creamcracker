@@ -1,4 +1,5 @@
 #summary How systems admins could use HASH to store passwords
+#labels Introduction
 
 = A little bit about security =
 
