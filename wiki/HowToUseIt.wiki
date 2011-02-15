@@ -1,4 +1,5 @@
 #summary How to execute CreamCracker
+#labels Introduction
 
 = How to use =
 To execute, use the syntax:
