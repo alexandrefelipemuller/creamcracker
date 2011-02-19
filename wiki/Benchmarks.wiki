@@ -1,0 +1,11 @@
+#summary Performance test with other projects found on the code.google
+#labels Information
+
+= Tests with others projects =
+MD5
+using word: websit
+lowercase alphabet
+
+  * krhash 75 seconds
+  * perl md5cracking 1540 seconds
+  * creamcracker md5decode 0.68 seconds
