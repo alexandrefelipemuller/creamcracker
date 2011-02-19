@@ -3,11 +3,12 @@
 
 = Tests with others projects =
 == MD5 ==
-using word: websit
+Using word: websit
 
-lowercase alphabet
+Modification: for perl screen output functions were disabled
 
+Configuration: lowercase alphabet, minimum size: 6, maximum size 6
 
-  * krhash *75 seconds*
-  * perl md5cracking *1540 seconds*
-  * creamcracker md5decode *0.68 second*
+  * perl md5cracking - *1540 seconds*
+  * krhash 0.3 - *75 seconds*
+  * creamcracker md5decode - *0.68 second*
