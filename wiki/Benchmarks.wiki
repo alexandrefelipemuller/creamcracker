@@ -22,8 +22,10 @@ http://3.14.by/en/read/md5_benchmark
 According to it, the fastest cracker is "Barswf"
 
 I generated the hash for word websit:
-Barswf *3.35* seconds
-creamcracker *0.68* seconds
+ * Barswf *3.35* seconds
+ * creamcracker *0.68* seconds
+
 
 It needs more test, because enumeration can produce false effect of speed
+
 obs: Barswf do not have source code available
