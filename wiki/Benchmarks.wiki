@@ -26,6 +26,4 @@ I generated the hash for word websit:
  * creamcracker *0.68* seconds
 
 
-It needs more test, because enumeration can produce false effect of speed
-
-obs: Barswf do not have source code available
+It needs more test, because enumeration can produce false effect of speed (*this is a wrong test*)
