@@ -3,6 +3,7 @@
 
 = Tests with others projects =
 == MD5 ==
+=== Test 1 ===
 Using word: websit
 
 Modification: for perl screen output functions were disabled
@@ -12,3 +13,17 @@ Configuration: lowercase alphabet, minimum size: 6, maximum size 6
   * perl md5cracking - *1540 seconds*
   * krhash 0.3 - *75 seconds*
   * creamcracker md5decode - *0.68 second*
+
+
+=== Test 2 ===
+I found this article about benchmarks:
+http://3.14.by/en/read/md5_benchmark
+
+According to it, the fastest cracker is "Barswf"
+
+I generated the hash for word websit:
+Barswf *3.35* seconds
+creamcracker *0.68* seconds
+
+It needs more test, because enumeration can produce false effect of speed
+obs: Barswf do not have source code available
