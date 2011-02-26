@@ -37,7 +37,7 @@ static void crack(int offset,uint32_t *in)
 static void showResult(uint32_t *in,int current_stringSize){
 	int i;
 	char *keyFound=malloc(sizeof(char)*30);
-	for (i = 0; i < 30; i++)
+	for (i = 0; i < current_stringSize; i++)
 		keyFound[i]=in[i >> 2]>>((i & 3)<<3);
 	keyFound[current_stringSize]='\0';
 	printf("Match string found: %s\n",keyFound);
@@ -53,10 +53,10 @@ static struct thread_data *thread_data_array;
 static void callCrack_thread(void *threadarg){
 	struct thread_data *my_data;
         my_data = (struct thread_data *) threadarg;
-	uint32_t in[16];
-        in[14] = ((uint32_t)my_data->tam << 3);
+	uint32_t in[6];
+        in[5] = ((uint32_t)my_data->tam << 3);
         in[my_data->tam/4]=0x80<<(((my_data->tam)%4)<<3);
-	in[0]=(uint32_t)in[0]|my_data->initChar;
+	in[0]=(uint32_t)my_data->initChar;
 	current_stringSize=my_data->tam;
         crack(1,in);
 }

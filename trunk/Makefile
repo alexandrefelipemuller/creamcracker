@@ -1,6 +1,6 @@
 #COMP=/opt/open64/bin/opencc -O2 
 #COMP=clang -O2 
-COMP=gcc -O2 -Wall -Wextra -Werror -funsafe-loop-optimizations -fpredictive-commoning # -fprofile-use
+COMP=gcc -O2 -Wall -Wextra -Werror -funsafe-loop-optimizations -fpredictive-commoning # -fprofile-use -mtune=nocona -march=nocona 
 
 MD5BIN=bin/md5decode
 SHA1BIN=bin/sha1decode
