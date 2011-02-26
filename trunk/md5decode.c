@@ -14,21 +14,19 @@ int TransformCompareMd5(uint32_t *key,uint32_t *in);
 void loadMd5(uint32_t buf[4],char *md5Key);
 static void showResult(uint32_t *in,int current_stringSize);
 
-static void crack(int offset,uint32_t *in)
+static void crack(int offset,char *in)
 {
 	if (offset >= current_stringSize)
 	{
-		if (TransformCompareMd5(sMd5Key, in))
-			showResult(in, current_stringSize);
+		if (TransformCompareMd5(sMd5Key,(void*)in))
+			showResult((void*)in, current_stringSize);
 	}
 	else
 	{
-		uint32_t j=alphaSize,i=j--;
-		const uint32_t p = (offset << 3) & 24;
-		for(;i--;)
+		int i;
+		for(i=0;i<=alphaSize;i++)
 		{
-			in[offset >> 2] &= (uint32_t) ~ (0xFF <<  p); //Clear position of the new letter
-			in[offset >> 2] += (uint32_t) alpha[j-i] << p; // Put the new letter on string
+			in[offset] = alpha[i]; // Put letter on string
 			crack(offset+1,in);
 		}
 	}
@@ -54,11 +52,11 @@ static void callCrack_thread(void *threadarg){
 	struct thread_data *my_data;
         my_data = (struct thread_data *) threadarg;
 	uint32_t in[6];
-        in[5] = ((uint32_t)my_data->tam << 3);
+        in[5] = ((uint32_t)my_data->tam << 3); /* This is the ugliest code of ever */
         in[my_data->tam/4]=0x80<<(((my_data->tam)%4)<<3);
 	in[0]=(uint32_t)my_data->initChar;
 	current_stringSize=my_data->tam;
-        crack(1,in);
+        crack(1,(void*) in);
 }
 
 
