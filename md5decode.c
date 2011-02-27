@@ -12,14 +12,16 @@ static uint32_t sMd5Key[4];
 
 int TransformCompareMd5(uint32_t *key,uint32_t *in);
 void loadMd5(uint32_t buf[4],char *md5Key);
-static void showResult(uint32_t *in,int current_stringSize);
 
 static void crack(int offset,char *in)
 {
 	if (offset >= current_stringSize)
 	{
-		if (TransformCompareMd5(sMd5Key,(void*)in))
-			showResult((void*)in, current_stringSize);
+		if (TransformCompareMd5(sMd5Key,(void*)in)){
+			in[current_stringSize]='\0';
+			printf("Match string found: %s\n",in);
+			exit(0);
+		}
 	}
 	else
 	{
@@ -30,16 +32,6 @@ static void crack(int offset,char *in)
 			crack(offset+1,in);
 		}
 	}
-}
-
-static void showResult(uint32_t *in,int current_stringSize){
-	int i;
-	char *keyFound=malloc(sizeof(char)*30);
-	for (i = 0; i < current_stringSize; i++)
-		keyFound[i]=in[i >> 2]>>((i & 3)<<3);
-	keyFound[current_stringSize]='\0';
-	printf("Match string found: %s\n",keyFound);
-	exit(0);
 }
 
 struct thread_data{
@@ -58,7 +50,6 @@ static void callCrack_thread(void *threadarg){
 	current_stringSize=my_data->tam;
         crack(1,(void*) in);
 }
-
 
 static void callCrack_size(int size){
         int j;
