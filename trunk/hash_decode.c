@@ -8,16 +8,22 @@
 static char *alpha;
 static int alphaSize;
 static int current_stringSize;
-static uint32_t sMd5Key[4];
+static uint32_t *pKey;
+#ifdef CONFIG_MD5
+int HashSumAndCompare(uint32_t *key,uint32_t *in);
+#else
+int HashSumAndCompare(uint32_t *key,uint32_t *in, int len);
+#endif
+void loadHash(uint32_t buf[4],char *strKey);
 
-int TransformCompareMd5(uint32_t *key,uint32_t *in);
-void loadMd5(uint32_t buf[4],char *md5Key);
-
-static void crack(int offset,char *in)
-{
+static void crack(int offset,char *in){
 	if (offset >= current_stringSize)
 	{
-		if (TransformCompareMd5(sMd5Key,(void*)in)){
+		#ifdef CONFIG_MD5
+			if (HashSumAndCompare(pKey,(void*)in)){
+		#else
+			if (HashSumAndCompare(pKey,(void*)in,current_stringSize)){
+		#endif
 			in[current_stringSize]='\0';
 			printf("Match string found: %s\n",in);
 			exit(0);
@@ -43,10 +49,15 @@ static struct thread_data *thread_data_array;
 static void callCrack_thread(void *threadarg){
 	struct thread_data *my_data;
         my_data = (struct thread_data *) threadarg;
-	uint32_t in[6];
-        in[5] = ((uint32_t)my_data->tam << 3); /* This is the ugliest code of ever */
-        in[my_data->tam/4]=0x80<<(((my_data->tam)%4)<<3);
-	in[0]=(uint32_t)my_data->initChar;
+	#ifdef CONFIG_MD5
+		uint32_t in[6];
+     		in[5] = ((uint32_t)my_data->tam << 3); /* This is the ugliest code of ever */
+		in[my_data->tam/4]=0x80<<(((my_data->tam)%4)<<3);
+	        in[0]=(uint32_t)my_data->initChar;
+	#else
+		char in[19];
+                in[0]=my_data->initChar;
+	#endif
 	current_stringSize=my_data->tam;
         crack(1,(void*) in);
 }
@@ -68,15 +79,23 @@ static void callCrack_size(int size){
 
 int main (int argc, char *argv[]){
 	if (argc != 5){
-		printf ("%s [caAdx] min max md5\n", argv[0]);
+		printf ("%s [caAdx] min max hash\n", argv[0]);
 		exit(1);
 	}
-	char md5Key[33];
+	
+	#ifdef CONFIG_MD5
+		int hashSize = 32;
+	#else
+		int hashSize = 40;
+	#endif
+	char strKey[hashSize];
+	uint32_t Key[hashSize/8];
+	pKey=Key;
 	char alphaType = (char)*argv[1];
 	const int minS = (int)atoi(argv[2]);
 	const int maxS = (int)atoi(argv[3]);
 	switch (alphaType)
-	{
+	{	
 		case 'c':
 			alpha = "aeosrnidmutcplgh"; //Most commons chars in passwords
 			break;
@@ -93,7 +112,7 @@ int main (int argc, char *argv[]){
 			alpha = "aedbcfghsijklmnopqrtuvwxyz123AEDBCFGHIJKLMNOPQRSTUVWXYZ0456789$#@!\"%&/()=?-.:\\*'-_:;, ";
 			break;
 		default :
-			printf ("%s [caAdx] min max md5\n", argv[0]);
+			printf ("%s [caAdx] min max hash\n", argv[0]);
 			exit(1);
 	}
 
@@ -105,16 +124,16 @@ int main (int argc, char *argv[]){
 		printf ("Minimum size not supported\nThe key should have at least 1 char\n");
 		exit(1);
 	}
-	if (strlen(argv[4]) != 32){
-                printf ("%s [caAdx] min max md5(32 chars 0-9A-F)\n", argv[0]);
+	if ((unsigned int) strlen(argv[4]) != (unsigned int) hashSize){
+                printf ("%s [caAdx] min max hash(%d chars 0-9A-F)\n", argv[0], hashSize);
                 exit(1);
         }
         int i;
-        for (i=0; i < 33; i++)
-        	md5Key[i] = (char)tolower(argv[4][i]); //better than strcpy(md5Key, argv[4]);
+        for (i=0; i <= hashSize; i++)
+        	strKey[i] = (char)tolower(argv[4][i]); //better than strcpy(strKey, argv[4]);
 
-	printf("hash %s to be cracked\n",md5Key);
-	loadMd5(sMd5Key,md5Key);
+	printf("hash %s to be cracked\n",strKey);
+	loadHash(pKey,strKey);
 	alphaSize=(int)strlen(alpha);
 	thread_data_array=malloc(sizeof(struct thread_data)*alphaSize);
 
