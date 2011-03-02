@@ -42,7 +42,7 @@ typedef struct {
  * handle will the destroy the returned buffer.
  * Returns: 20 bytes representing the digest.
  */
-int Sha1String(uint32_t *SHA1KEY, unsigned char *inbuf, size_t inlen)
+int HashSumAndCompare(uint32_t *SHA1KEY, unsigned char *inbuf, size_t inlen)
 {
 	SHA1_CONTEXT hd;
 
@@ -245,7 +245,7 @@ return((&hd)->buf[0] == SHA1KEY[0] && (&hd)->buf[1] == SHA1KEY[1] && (&hd)->buf[
 	&& (&hd)->buf[16] == SHA1KEY[16] && (&hd)->buf[17] == SHA1KEY[17]  && (&hd)->buf[18] == SHA1KEY[18] && (&hd)->buf[19] == SHA1KEY[19]);
 }	
 
-void loadSha1Int(char *sha1Key,uint32_t *SHA1KEY){
+void loadHash(uint32_t *SHA1KEY,char *sha1Key){
 	int i;
 	char temp[11];
 	for (i=0;i<40;i+=2){

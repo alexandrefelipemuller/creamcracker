@@ -67,7 +67,7 @@
 
 /* Basic MD5 step. Transform and compare based on in.
  */
-int TransformCompareMd5 (uint32_t *key,uint32_t *in)
+int HashSumAndCompare (uint32_t *key,uint32_t *in)
 {
   register uint32_t a,
 	b = (uint32_t)(0xefcdab89),
@@ -179,7 +179,7 @@ int TransformCompareMd5 (uint32_t *key,uint32_t *in)
 }
 
 /* This function try to reverse transform MD5, this only economize a little portion of steps */
-void loadMd5(uint32_t buf[4],char *md5Key){
+void loadHash(uint32_t buf[4],char *md5Key){
 	int i;
 	char temp[11];
 	for (i=0;i<32;i+=8){
