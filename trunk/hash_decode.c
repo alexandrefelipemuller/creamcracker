@@ -14,15 +14,15 @@ int HashSumAndCompare(uint32_t *key,uint32_t *in);
 #else
 int HashSumAndCompare(uint32_t *key,uint32_t *in, int len);
 #endif
-void loadHash(uint32_t buf[4],char *strKey);
+void loadHash(uint32_t *buf,char *strKey);
 
 static void crack(int offset,char *in){
 	if (offset >= current_stringSize)
 	{
 		#ifdef CONFIG_MD5
-			if (HashSumAndCompare(pKey,(void*)in)){
+			if (HashSumAndCompare(pKey, (void*)in)){
 		#else
-			if (HashSumAndCompare(pKey,(void*)in,current_stringSize)){
+			if (HashSumAndCompare(pKey, (void*)in, current_stringSize)){
 		#endif
 			in[current_stringSize]='\0';
 			printf("Match string found: %s\n",in);
@@ -89,7 +89,7 @@ int main (int argc, char *argv[]){
 		int hashSize = 40;
 	#endif
 	char strKey[hashSize];
-	uint32_t Key[hashSize/8];
+	uint32_t Key[hashSize/8]; //It stores the hashkey in array of int
 	pKey=Key;
 	char alphaType = (char)*argv[1];
 	const int minS = (int)atoi(argv[2]);
