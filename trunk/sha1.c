@@ -29,13 +29,6 @@
 
 #undef BIG_ENDIAN_HOST
 
-typedef struct {
-	uint32_t  h0,h1,h2,h3,h4;
-	uint32_t  nblocks;
-	unsigned char buf[64];
-	int  count;
-} SHA1_CONTEXT;
-
 /* The routine final terminates the computation and
  * returns the digest.
  * The handle is prepared for a new cycle, but adding bytes to the
@@ -44,64 +37,55 @@ typedef struct {
  */
 int HashSumAndCompare(uint32_t *SHA1KEY, unsigned char *inbuf, size_t inlen)
 {
-	SHA1_CONTEXT hd;
 
-	(&hd)->h0 = 0x67452301;
-	(&hd)->h1 = 0xefcdab89;
-	(&hd)->h2 = 0x98badcfe;
-	(&hd)->h3 = 0x10325476;
-	(&hd)->h4 = 0xc3d2e1f0;
-	(&hd)->nblocks = 0;
-	(&hd)->count = 0;
-	 while(inlen--)
-		(&hd)->buf[(&hd)->count++] = *inbuf++;
+	uint32_t h0 = 0x67452301;
+	uint32_t h1 = 0xefcdab89;
+	uint32_t h2 = 0x98badcfe;
+	uint32_t h3 = 0x10325476;
+	uint32_t h4 = 0xc3d2e1f0;
+	uint32_t count = 0;
+	unsigned char buf[64];
+	while(inlen--)
+		buf[count++] = *inbuf++;
 
-	uint32_t t, msb, lsb;
+	uint32_t t, msb;
 	unsigned char *p;
 
-	t = (&hd)->nblocks;
-	/* multiply by 64 to make a byte count */
-	lsb = t << 6;
-	msb = t >> 26;
-	/* add the count */
-	t = lsb;
-	if( (lsb += (&hd)->count) < t )
-		msb++;
+	t = count;
+	msb = 0;
+	const uint32_t lsb = count << 3;
 	/* multiply by 8 to make a bit count */
-	t = lsb;
-	lsb <<= 3;
-	msb <<= 3;
 	msb |= t >> 29;
 
-	(&hd)->buf[(&hd)->count++] = 0x80; /* pad */
-	while( (&hd)->count < 56 )
-		(&hd)->buf[(&hd)->count++] = 0;  /* pad */
+	buf[count++] = 0x80; /* pad */
+	while( count < 56 )
+		buf[count++] = 0;  /* pad */
 
 	/* append the 64 bit count */
-	(&hd)->buf[56] = msb >> 24;
-	(&hd)->buf[57] = msb >> 16;
-	(&hd)->buf[58] = msb >>  8;
-	(&hd)->buf[59] = msb;
-	(&hd)->buf[60] = lsb >> 24;
-	(&hd)->buf[61] = lsb >> 16;
-	(&hd)->buf[62] = lsb >>  8;
-	(&hd)->buf[63] = lsb;
+	buf[56] = msb >> 24;
+	buf[57] = msb >> 16;
+	buf[58] = msb >>  8;
+	buf[59] = msb;
+	buf[60] = count << 21;
+	buf[61] = count << 13;
+	buf[62] = count <<  5;
+	buf[63] = lsb;
 
 	uint32_t a,b,c,d,e,tm;
 	uint32_t x[16];
 
 	/* get values from the chaining vars */
-	a = (&hd)->h0;
-	b = (&hd)->h1;
-	c = (&hd)->h2;
-	d = (&hd)->h3;
-	e = (&hd)->h4;
+	a = h0;
+	b = h1;
+	c = h2;
+	d = h3;
+	e = h4;
 
 #ifdef BIG_ENDIAN_HOST
-	memcpy( x, (&hd)->buf, 64 );
+	memcpy( x, buf, 64 );
 #else
 	{
-		unsigned char* data = (&hd)->buf;
+		unsigned char* data = buf;
 		int i;
 		unsigned char *p2;
 		for(i=0, p2=(unsigned char*)x; i < 16; i++, p2 += 4 ) {
@@ -216,18 +200,18 @@ R( c, d, e, a, b, F4, K4, M(78) );
 R( b, c, d, e, a, F4, K4, M(79) );
 
 /* Update chaining vars */
-(&hd)->h0 += a;
-(&hd)->h1 += b;
-(&hd)->h2 += c;
-(&hd)->h3 += d;
-(&hd)->h4 += e;
+h0 += a;
+h1 += b;
+h2 += c;
+h3 += d;
+h4 += e;
 
-p = (&hd)->buf;
+p = buf;
 #ifdef BIG_ENDIAN_HOST
-#define X(a) do { *(uint32_t*)p = (&hd)->h##a ; p += 4; } while(0)
+#define X(a) do { *(uint32_t*)p = h##a ; p += 4; } while(0)
 #else /* little endian */
-#define X(a) do { *p++ = (&hd)->h##a >> 24; *p++ = (&hd)->h##a >> 16;	 \
-	*p++ = (&hd)->h##a >> 8; *p++ = (&hd)->h##a; } while(0)
+#define X(a) do { *p++ = h##a >> 24; *p++ = h##a >> 16;	 \
+	*p++ = h##a >> 8; *p++ = h##a; } while(0)
 #endif
 X(0);
 X(1);
@@ -236,13 +220,15 @@ X(3);
 X(4);
 #undef X
 
-if ((&hd)->buf[0] != SHA1KEY[0])
+if (buf[0] != SHA1KEY[0])
 	return false;
-return((&hd)->buf[0] == SHA1KEY[0] && (&hd)->buf[1] == SHA1KEY[1] && (&hd)->buf[2] == SHA1KEY[2] && (&hd)->buf[3] == SHA1KEY[3]
-	&& (&hd)->buf[4] == SHA1KEY[4] && (&hd)->buf[5] == SHA1KEY[5] && (&hd)->buf[6] == SHA1KEY[6] && (&hd)->buf[7] == SHA1KEY[7]
-	&& (&hd)->buf[8] == SHA1KEY[8] && (&hd)->buf[9] == SHA1KEY[9] && (&hd)->buf[10] == SHA1KEY[10] && (&hd)->buf[11] == SHA1KEY[11]
-	&& (&hd)->buf[12] == SHA1KEY[12] && (&hd)->buf[13] == SHA1KEY[13] && (&hd)->buf[14] == SHA1KEY[14] && (&hd)->buf[15] == SHA1KEY[15]
-	&& (&hd)->buf[16] == SHA1KEY[16] && (&hd)->buf[17] == SHA1KEY[17]  && (&hd)->buf[18] == SHA1KEY[18] && (&hd)->buf[19] == SHA1KEY[19]);
+if (buf[1] != SHA1KEY[1])
+	return false;
+return (buf[2] == SHA1KEY[2] && buf[3] == SHA1KEY[3]
+	&& buf[4] == SHA1KEY[4] && buf[5] == SHA1KEY[5] && buf[6] == SHA1KEY[6] && buf[7] == SHA1KEY[7]
+	&& buf[8] == SHA1KEY[8] && buf[9] == SHA1KEY[9] && buf[10] == SHA1KEY[10] && buf[11] == SHA1KEY[11]
+	&& buf[12] == SHA1KEY[12] && buf[13] == SHA1KEY[13] && buf[14] == SHA1KEY[14] && buf[15] == SHA1KEY[15]
+	&& buf[16] == SHA1KEY[16] && buf[17] == SHA1KEY[17]  && buf[18] == SHA1KEY[18] && buf[19] == SHA1KEY[19]);
 }	
 
 void loadHash(uint32_t *SHA1KEY,char *sha1Key){
