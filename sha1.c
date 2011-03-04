@@ -48,24 +48,19 @@ int HashSumAndCompare(uint32_t *SHA1KEY, unsigned char *inbuf, size_t inlen)
 	while(inlen--)
 		buf[count++] = *inbuf++;
 
-	uint32_t t, msb;
-	unsigned char *p;
-
-	t = count;
-	msb = 0;
 	const uint32_t lsb = count << 3;
 	/* multiply by 8 to make a bit count */
-	msb |= t >> 29;
+	unsigned char *p;
 
 	buf[count++] = 0x80; /* pad */
 	while( count < 56 )
 		buf[count++] = 0;  /* pad */
 
 	/* append the 64 bit count */
-	buf[56] = msb >> 24;
-	buf[57] = msb >> 16;
-	buf[58] = msb >>  8;
-	buf[59] = msb;
+	buf[56] = 0;
+	buf[57] = 0;
+	buf[58] = 0;
+	buf[59] = 0;
 	buf[60] = count << 21;
 	buf[61] = count << 13;
 	buf[62] = count <<  5;
@@ -81,9 +76,9 @@ int HashSumAndCompare(uint32_t *SHA1KEY, unsigned char *inbuf, size_t inlen)
 	d = h3;
 	e = h4;
 
-#ifdef BIG_ENDIAN_HOST
-	memcpy( x, buf, 64 );
-#else
+//#ifdef BIG_ENDIAN_HOST
+//	memcpy( x, buf, 64 );
+//#else
 	{
 		unsigned char* data = buf;
 		int i;
@@ -95,7 +90,7 @@ int HashSumAndCompare(uint32_t *SHA1KEY, unsigned char *inbuf, size_t inlen)
 			p2[0] = *data++;
 		}
 	}
-#endif
+//#endif
 
 
 #define K1  0x5A827999L
@@ -207,25 +202,36 @@ h3 += d;
 h4 += e;
 
 p = buf;
-#ifdef BIG_ENDIAN_HOST
-#define X(a) do { *(uint32_t*)p = h##a ; p += 4; } while(0)
-#else /* little endian */
-#define X(a) do { *p++ = h##a >> 24; *p++ = h##a >> 16;	 \
-	*p++ = h##a >> 8; *p++ = h##a; } while(0)
-#endif
-X(0);
-X(1);
-X(2);
-X(3);
-X(4);
-#undef X
-
+*p++ = h0 >> 24;
 if (buf[0] != SHA1KEY[0])
 	return false;
+*p++ = h0 >> 16;
 if (buf[1] != SHA1KEY[1])
 	return false;
-return (buf[2] == SHA1KEY[2] && buf[3] == SHA1KEY[3]
-	&& buf[4] == SHA1KEY[4] && buf[5] == SHA1KEY[5] && buf[6] == SHA1KEY[6] && buf[7] == SHA1KEY[7]
+*p++ = h0 >> 8;
+if (buf[2] != SHA1KEY[2])
+	return false;
+*p++ = h0;
+if (buf[3] != SHA1KEY[3])
+	return false;
+*p++ = h1 >> 24;
+*p++ = h1 >> 16;
+*p++ = h1 >> 8;
+*p++ = h1;
+*p++ = h2 >> 24;
+*p++ = h2 >> 16;
+*p++ = h2 >> 8;
+*p++ = h2;
+*p++ = h3 >> 24;
+*p++ = h3 >> 16;
+*p++ = h3 >> 8;
+*p++ = h3;
+*p++ = h4 >> 24;
+*p++ = h4 >> 16;
+*p++ = h4 >> 8;
+*p++ = h4;
+
+return (buf[4] == SHA1KEY[4] && buf[5] == SHA1KEY[5] && buf[6] == SHA1KEY[6] && buf[7] == SHA1KEY[7]
 	&& buf[8] == SHA1KEY[8] && buf[9] == SHA1KEY[9] && buf[10] == SHA1KEY[10] && buf[11] == SHA1KEY[11]
 	&& buf[12] == SHA1KEY[12] && buf[13] == SHA1KEY[13] && buf[14] == SHA1KEY[14] && buf[15] == SHA1KEY[15]
 	&& buf[16] == SHA1KEY[16] && buf[17] == SHA1KEY[17]  && buf[18] == SHA1KEY[18] && buf[19] == SHA1KEY[19]);
