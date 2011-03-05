@@ -1,4 +1,5 @@
 #summary Perfomance test with 4 different compilers
+#labels Information
 
 Those times are in seconds (less is better).
 Real means the time passed, and user means the time of all processors serialized.
