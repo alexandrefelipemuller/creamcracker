@@ -49,17 +49,15 @@ static struct thread_data *thread_data_array;
 static void callCrack_thread(void *threadarg){
 	struct thread_data *my_data;
         my_data = (struct thread_data *) threadarg;
+	char in[19];
 	#ifdef CONFIG_MD5
-		uint32_t in[6];
-     		in[5] = ((uint32_t)my_data->tam << 3); /* This is the ugliest code of ever */
-		in[my_data->tam/4]=0x80<<(((my_data->tam)%4)<<3);
-	        in[0]=(uint32_t)my_data->initChar;
-	#else
-		char in[19];
-                in[0]=my_data->initChar;
+		uint32_t *iin = (void *)in;
+     		iin[5] = ((uint32_t)my_data->tam << 3); /* FIXME: This is the ugliest code of ever */
+		in[my_data->tam]=0x80;
 	#endif
+	in[0]=my_data->initChar;
 	current_stringSize=my_data->tam;
-        crack(1,(void*) in);
+        crack(1,in);
 }
 
 static void callCrack_size(int size){
