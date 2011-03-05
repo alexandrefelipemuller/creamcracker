@@ -1,6 +1,7 @@
 #summary Perfomance test with 4 different compilers
 
-= Introduction =
+Those times are in seconds (less is better).
+Real means the time passed, and user means the time of all processors serialized.
 
 = MD5 8 char length word=
 {{{
