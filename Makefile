@@ -1,10 +1,14 @@
 #COMP=/opt/open64/bin/opencc -O2 
 #COMP=clang -O2 
-COMP=gcc -O2 -Wall -Wextra -Werror -funsafe-loop-optimizations -fpredictive-commoning # -fprofile-use -mtune=nocona -march=nocona 
+#COMP=gcc -O2 -Wall -Wextra -Werror -funsafe-loop-optimizations -fpredictive-commoning # -fprofile-use -mtune=nocona -march=nocona 
+COMP=gcc -O2 -funsafe-loop-optimizations -fpredictive-commoning # -fprofile-use -mtune=nocona -march=nocona 
+
 
 MD5BIN=bin/md5decode
 SHA1BIN=bin/sha1decode
-all: $(MD5BIN) $(SHA1BIN)
+SHA256BIN=bin/sha256decode
+
+all: $(MD5BIN) $(SHA1BIN) $(SHA256BIN)
 
 ./$(MD5BIN): hash_decode.c md5.c
 		$(COMP) -c md5.c -o md5.o
@@ -16,6 +20,11 @@ all: $(MD5BIN) $(SHA1BIN)
 		$(COMP) -c hash_decode.c -o sha1decode.o
 		$(COMP) sha1decode.o sha1.o -o $(SHA1BIN) -lpthread
 		strip ./$(SHA1BIN)
+./$(SHA256BIN): hash_decode.c sha256.c
+		$(COMP) -c sha256.c -o sha256.o
+		$(COMP) -D CONFIG_SHA256 -c hash_decode.c -o sha256decode.o
+		$(COMP) sha256decode.o sha256.o -o $(SHA256BIN) -lpthread
+		strip ./$(SHA256BIN)
 
 clean:
 		rm -f *~ core* *.o $(MD5BIN) $(SHA1BIN)
