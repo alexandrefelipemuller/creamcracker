@@ -95,18 +95,21 @@ int main (int argc, char *argv[]){
 	switch (alphaType)
 	{	
 		case 'c':
-			alpha = "aeosrnidmutcplgh"; //Most commons chars in passwords
+			alpha = "eaorinsltcmdhugp"; //Most commons chars in passwords
 			break;
 		case 'a':
-			alpha = "aedbcfghijklmnopqrstuvwxyz";
+			alpha = "eaorinsltcmdhbugpykfwvjzxq";
 			break;
 		case 'A':
-			alpha = "aedbcfghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+//eaorinsltcmdhbug1pykfwv2j30z45x9678qKQFZX
+			alpha = "aedbcfghijklmnopqrstuvwxyzAENROIBCDFGHJKLMPQSTUVWXYZ";
 			break;
 		case 'd':
-			alpha = "aedbcfghijklmnopqrstuvwxyz123ABCDEFGHIJKLMNOPQRSTUVWXYZ0456789";
+			alpha = "aeoidbcfghjklmnpqrstuvwxyz123AENROIBCDFGHJKLMPQSTUVWXYZ0456789";
+			//alpha = "eaorinsltcmdhbug1pykfwv2j30z45x9678qKQFZX";
 			break;
 		case 'x':
+//eaorinsltcmdhbug1pykfwv2j30z45x9678qEALSONIRMJCYUTDPHGWVB!KQF#@ZX$
 			alpha = "aedbcfghsijklmnopqrtuvwxyz123AEDBCFGHIJKLMNOPQRSTUVWXYZ0456789$#@!\"%&/()=?-.:\\*'-_:;, ";
 			break;
 		default :
