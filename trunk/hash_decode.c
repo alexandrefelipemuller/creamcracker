@@ -84,11 +84,16 @@ int main (int argc, char *argv[]){
 	#ifdef CONFIG_MD5
 		int hashSize = 32;
 	#else
-		int hashSize = 40;
+		#ifdef CONFIG_SHA256
+			int hashSize = 64;
+		#else
+			int hashSize = 40;
+		#endif
 	#endif
 	char strKey[hashSize];
-	uint32_t Key[hashSize/8]; //It stores the hashkey in array of int
+	uint32_t Key[hashSize]; //It stores the hashkey in array of int
 	pKey=Key;
+
 	char alphaType = (char)*argv[1];
 	const int minS = (int)atoi(argv[2]);
 	const int maxS = (int)atoi(argv[3]);
