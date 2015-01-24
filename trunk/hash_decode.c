@@ -83,13 +83,19 @@ int main (int argc, char *argv[]){
 	
 	#ifdef CONFIG_MD5
 		int hashSize = 32;
-	#else
-		#ifdef CONFIG_SHA256
-			int hashSize = 64;
+	#else	
+		#ifdef CONFIG_SHA3
+			int hashSize = 128;
 		#else
-			int hashSize = 40;
+			#ifdef CONFIG_SHA256
+				int hashSize = 64;
+			#else
+				int hashSize = 40;	
+			#endif
 		#endif
 	#endif
+
+
 	char strKey[hashSize];
 	uint32_t Key[hashSize]; //It stores the hashkey in array of int
 	pKey=Key;

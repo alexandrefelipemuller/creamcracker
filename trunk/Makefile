@@ -7,8 +7,9 @@ COMP=gcc -O2 -funsafe-loop-optimizations -fpredictive-commoning # -fprofile-use 
 MD5BIN=bin/md5decode
 SHA1BIN=bin/sha1decode
 SHA256BIN=bin/sha256decode
+SHA3BIN=bin/sha3decode
 
-all: $(MD5BIN) $(SHA1BIN) $(SHA256BIN)
+all: $(MD5BIN) $(SHA1BIN) $(SHA256BIN) $(SHA3BIN)
 
 ./$(MD5BIN): hash_decode.c md5.c
 		$(COMP) -c md5.c -o md5.o
@@ -25,6 +26,12 @@ all: $(MD5BIN) $(SHA1BIN) $(SHA256BIN)
 		$(COMP) -D CONFIG_SHA256 -c hash_decode.c -o sha256decode.o
 		$(COMP) sha256decode.o sha256.o -o $(SHA256BIN) -lpthread
 		strip ./$(SHA256BIN)
+
+./$(SHA3BIN): hash_decode.c sha3.c
+		$(COMP) -std=c99 -c sha3.c -o sha3.o
+		$(COMP) -D CONFIG_SHA3 -c hash_decode.c -o sha3decode.o
+		$(COMP) sha3decode.o sha3.o -o $(SHA3BIN) -lpthread
+		strip ./$(SHA3BIN)
 
 clean:
 		rm -f *~ core* *.o $(MD5BIN) $(SHA1BIN)
