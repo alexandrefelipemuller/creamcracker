@@ -25,3 +25,28 @@ First, clone the CreamCracker repository to your local system.
 ```bash
 git clone https://github.com/user/CreamCracker.git
 cd CreamCracker
+make
+cd ./bin
+```
+
+
+Execution Example
+Here is an example of how to run CreamCracker:
+
+bash
+Copiar código
+./creamcracker c 3 5 e2fc714c4727ee9395f324cd2e7f331f
+In this example, the program will attempt to crack the e2fc714c4727ee9395f324cd2e7f331f hash (an MD5 hash) using passwords made up of the most common characters (eaorinsltcmdhugp) with a length between 3 and 5 characters.
+
+Expected Output
+If a match is found, the program will display the corresponding string:
+
+bash
+Copiar código
+Match string found: abc
+If no match is found up to the maximum password length, the program will print:
+
+bash
+Copiar código
+no results to size:5
+failed: no results found
